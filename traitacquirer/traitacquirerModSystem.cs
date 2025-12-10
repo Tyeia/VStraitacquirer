@@ -461,40 +461,92 @@ namespace traitacquirer
             eplr.GetBehavior<EntityBehaviorHealth>()?.MarkDirty();
             */
         }
-        public void loadCharacterClasses() //Taken from SurvivalMod Character.cs, CharacterSystem class where it is a private method
+        public void loadCharacterClasses()
         {
-            //onLoadedUniversal();
-            this.traits = api.Assets.Get("config/traits.json").ToObject<List<ExtendedTrait>>();
-            this.characterClasses = api.Assets.Get("config/characterclasses.json").ToObject<List<CharacterClass>>();
+            var allTraits = new List<ExtendedTrait>();
+            var allCharacterClasses = new List<CharacterClass>();
 
-            foreach (var trait in traits)
+            // Search all loaded mod assets
+            foreach (var pair in api.Assets.AllAssets)
             {
-                TraitsByCode[trait.Code] = trait;
+                var assetLoc = pair.Key;  // <-- this is AssetLocation
+                var asset = pair.Value;   // <-- this is IAsset
 
-                /*string col = "#ff8484";
-                if (trait.Type == EnumTraitType.Positive) col = "#84ff84";
-                if (trait.Type == EnumTraitType.Mixed) col = "#fff584";
+                string path = assetLoc.Path.ToLowerInvariant();
+                
+                
 
-                Console.WriteLine("\"trait-" + trait.Code + "\": \"<font color=\\"" + col + "\\">• " + trait.Code + "</font> ({0})\",");*/
-
-                /*foreach (var val in trait.Attributes)
+                if (path.EndsWith("traits.json"))
                 {
-                    Console.WriteLine("\"charattribute-" + val.Key + "-"+val.Value+"\": \"\",");
-                }*/
-            }
-
-            foreach (var charclass in characterClasses)
-            {
-                characterClassesByCode[charclass.Code] = charclass;
-
-                foreach (var jstack in charclass.Gear)
-                {
-                    if (!jstack.Resolve(api.World, "character class gear", false))
+                    try
+                    {   
+                        //api.World.Logger.Warning($"Trait Acquirer Loading Path: {path};Asset: {asset}");
+                        var traits = api.Assets.Get(assetLoc).ToObject<List<ExtendedTrait>>() ?? new List<ExtendedTrait>();
+                        api.World.Logger.Warning($"Loaded {traits.Count} Traits from {asset}");
+                        
+                        allTraits.AddRange(traits);
+                        // ======== Build runtime dictionaries ========
+                        foreach (var trait in traits)
+                        {
+                            try
+                            {
+                                //api.World.Logger.Warning($"Loading {trait.Code}");
+                                TraitsByCode[trait.Code] = trait;
+                            }
+                            catch (Exception e)
+                            {
+                                api.World.Logger.Warning($"Failed loading trait data from {trait}: {e}");
+                            }
+                        }
+                    }
+                    catch (Exception e)
                     {
-                        api.World.Logger.Warning("Unable to resolve character class gear " + jstack.Type + " with code " + jstack.Code + " item/bloc does not seem to exist. Will ignore.");
+                        api.World.Logger.Warning($"Failed loading traits.json from {assetLoc}: {e}");
+                    }
+                }
+
+                if (path.EndsWith("characterclasses.json"))
+                {
+                    try
+                    {
+                        //api.World.Logger.Warning($"Trait Acquirer Loading Path: {path};Asset: {asset}");
+                        var classes = api.Assets.Get(assetLoc).ToObject<List<CharacterClass>>() ?? new List<CharacterClass>();
+                        api.World.Logger.Warning($"Loaded {classes.Count} Classes from {asset}");
+                        allCharacterClasses.AddRange(classes);
+
+                        
+                        foreach (var charclass in classes)
+                        {
+                            try
+                            {
+                                //api.World.Logger.Warning($"Loading {charclass.Code}");
+                                characterClassesByCode[charclass.Code] = charclass;
+
+                                foreach (var jstack in charclass.Gear)
+                                {
+                                    if (!jstack.Resolve(api.World, "character class gear", false))
+                                    {
+                                        api.World.Logger.Warning($"Unable to resolve character class gear {jstack.Type}:{jstack.Code}. Ignoring.");
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                api.World.Logger.Warning($"Failed loading characterclass data from {charclass}: {e}");
+                            }
+                            
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        api.World.Logger.Warning($"Failed loading characterclasses.json from {assetLoc}: {e}");
                     }
                 }
             }
+
+            // Save merged results
+            this.traits = allTraits;
+            this.characterClasses = allCharacterClasses;
         }
     }
 }
