@@ -11,7 +11,7 @@ using System.Data;
 using System.Text;
 using System.Numerics;
 
-namespace traitacquirer
+namespace traitacquirermoddedclasses
 {
     public class traitacquirerModSystem : ModSystem
     {

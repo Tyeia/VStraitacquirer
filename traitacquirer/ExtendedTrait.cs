@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Vintagestory.GameContent;
 
-namespace traitacquirer
+namespace traitacquirermoddedclasses
 {
     public class ExtendedTrait : Trait
     {

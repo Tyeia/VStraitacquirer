@@ -12,11 +12,9 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 
-namespace Vintagestory.GameContent
-
-//namespace traitacquirer
+namespace traitacquirermoddedclasses
 {
-    internal class ItemTraitManual : Item
+    public class ItemTraitManual : Item
     {
         public override void OnHeldInteractStart(ItemSlot itemslot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
         {

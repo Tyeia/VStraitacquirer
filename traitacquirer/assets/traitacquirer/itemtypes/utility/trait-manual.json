@@ -1,6 +1,6 @@
 {
   "code": "trait-manual",
-  "class": "traitacquirer.ItemTraitManual",
+  "class": "traitacquirermoddedclasses.ItemTraitManual",
   "maxstacksize": 1,
   "behaviors": [
     {

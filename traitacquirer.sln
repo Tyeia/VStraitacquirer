@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CakeBuild", "CakeBuild\CakeBuild.csproj", "{B7C4C887-38D5-43E2-A964-3FCCC72BF0C6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "traitacquirer", "traitacquirer\traitacquirer.csproj", "{AACC9570-33F4-4982-970E-507B33BC55D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "traitacquirermoddedclasses", "traitacquirer\traitacquirer.csproj", "{AACC9570-33F4-4982-970E-507B33BC55D4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

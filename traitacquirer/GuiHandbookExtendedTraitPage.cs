@@ -8,8 +8,9 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
+using Vintagestory.API.Server;
 
-namespace traitacquirer
+namespace traitacquirermoddedclasses
 {
     internal class GuiHandbookExtendedTraitPage : GuiHandbookPage
     {
@@ -32,10 +33,10 @@ namespace traitacquirer
 
             pageCode = "ExtendedTraitInfo-" + trait.Code;
 
-            comps = VtmlUtil.Richtextify(capi, PageInfo(trait), CairoFont.WhiteSmallText().WithLineHeightMultiplier(1.2));
+            comps = VtmlUtil.Richtextify(capi, PageInfo(capi,trait), CairoFont.WhiteSmallText().WithLineHeightMultiplier(1.2));
         }
 
-        private string PageInfo(ExtendedTrait trait)
+        private string PageInfo(ICoreClientAPI capi,ExtendedTrait trait)
         {
             StringBuilder fulldesc = new StringBuilder();
             StringBuilder attributes = new StringBuilder();
@@ -66,10 +67,17 @@ namespace traitacquirer
                 fulldesc.AppendLine(desc);
             }
             
-            foreach (var val in trait.Attributes)
+            if(trait.Attributes != null)
             {
-                if (attributes.Length > 0) attributes.Append(", ");
-                attributes.Append(Lang.Get(string.Format(GlobalConstants.DefaultCultureInfo, "charattribute-{0}-{1}", val.Key, val.Value)));
+                foreach (var val in trait.Attributes)
+                {
+                    if (attributes.Length > 0) attributes.Append(", ");
+                    attributes.Append(Lang.Get(string.Format(GlobalConstants.DefaultCultureInfo, "charattribute-{0}-{1}", val.Key, val.Value)));
+                }
+            }
+            else
+            {
+                capi.Logger.Warning($"{trait.Code} contains null Attributes");
             }
             if (attributes.Length > 0)
             {

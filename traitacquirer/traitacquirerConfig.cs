@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Vintagestory.API.Common;
 using Vintagestory.GameContent;
 
-namespace traitacquirer
+namespace traitacquirermoddedclasses
 {
     internal class traitacquirerConfig
     {

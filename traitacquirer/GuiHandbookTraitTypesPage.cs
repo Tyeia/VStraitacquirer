@@ -8,7 +8,7 @@ using Vintagestory.API.Config;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
-namespace traitacquirer
+namespace traitacquirermoddedclasses
 {
     internal class GuiHandbookTraitTypesPage : GuiHandbookPage
     {
