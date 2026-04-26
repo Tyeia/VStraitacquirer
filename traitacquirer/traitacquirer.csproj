@@ -28,6 +28,10 @@
       <HintPath>$(VINTAGE_STORY)/Mods/VSCreativeMod.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>$(VINTAGE_STORY)/Lib/Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
 <ItemGroup>
@@ -44,9 +48,5 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
   </Content>
 </ItemGroup>
-
-<ItemGroup>
-	<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-</ItemGroup>	
 
 </Project>

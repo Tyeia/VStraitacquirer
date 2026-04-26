@@ -6,7 +6,7 @@
         "Arkhael"
     ],
     "description": "Allows you to acquire additional traits through gameplay.",
-    "version": "0.9.10",
+    "version": "0.9.11",
     "dependencies": {
         "game": ""
     }

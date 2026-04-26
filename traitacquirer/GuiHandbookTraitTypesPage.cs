@@ -17,10 +17,10 @@ namespace traitacquirermoddedclasses
         private string typeName;
         private List<ExtendedTrait> traits;
 
+        public override float SearchWeightOffset {get;}
         public string pageCode;
-        public string Title;
+        public PageText pageText;
         public string categoryCode = "trait";
-        string Text = "";
         public LoadedTexture Texture;
         RichTextComponentBase[] comps;
 
@@ -37,7 +37,7 @@ namespace traitacquirermoddedclasses
             this.typeName = ((EnumTraitType)type).ToString();
             this.traits = traits;
 
-            Title = Lang.Get("traittypename-" + typeName).ToSearchFriendly();
+            pageText.Title = Lang.Get("traittypename-" + typeName).ToSearchFriendly();
 
             pageCode = "TraitTypeInfo-" + typeName;
 
@@ -62,7 +62,7 @@ namespace traitacquirermoddedclasses
                     break;
             }
 
-            fulldesc.AppendLine($"<font size=\"24\" {colour}><strong>" + Title + "</strong></font>\n");
+            fulldesc.AppendLine($"<font size=\"24\" {colour}><strong>" + pageText.Title + "</strong></font>\n");
             //fulldesc.AppendLine($"PageCode: {pageCode}");
             foreach (ExtendedTrait trait in traits)
             {
@@ -82,18 +82,18 @@ namespace traitacquirermoddedclasses
         public void Recompose(ICoreClientAPI capi)
         {
             Texture?.Dispose();
-            Texture = new TextTextureUtil(capi).GenTextTexture(Title, CairoFont.WhiteSmallText());
+            Texture = new TextTextureUtil(capi).GenTextTexture(pageText.Title, CairoFont.WhiteSmallText());
         }
 
         public override void Dispose() { Texture?.Dispose(); Texture = null; }
 
-        public override float GetTextMatchWeight(string searchText)
+        public float GetTextMatchWeight(string searchText)
         {
-            if (Title.Equals(searchText, StringComparison.InvariantCultureIgnoreCase)) return 4;
-            if (Title.StartsWith(searchText + " ", StringComparison.InvariantCultureIgnoreCase)) return 3.5f;
-            if (Title.StartsWith(searchText, StringComparison.InvariantCultureIgnoreCase)) return 3f;
-            if (Title.CaseInsensitiveContains(searchText)) return 2.75f;
-            if (Text.CaseInsensitiveContains(searchText)) return 1.25f;
+            if (pageText.Title.Equals(searchText, StringComparison.InvariantCultureIgnoreCase)) return 4;
+            if (pageText.Title.StartsWith(searchText + " ", StringComparison.InvariantCultureIgnoreCase)) return 3.5f;
+            if (pageText.Title.StartsWith(searchText, StringComparison.InvariantCultureIgnoreCase)) return 3f;
+            if (pageText.Title.CaseInsensitiveContains(searchText)) return 2.75f;
+            if (pageText.Text.CaseInsensitiveContains(searchText)) return 1.25f;
             return 0;
         }
 
@@ -115,6 +115,11 @@ namespace traitacquirermoddedclasses
                 Texture.Height,
                 50
             );
+        }
+
+        public override PageText GetPageText()
+        {
+            return pageText;
         }
     }
 }
