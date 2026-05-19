@@ -3,10 +3,11 @@
     "modid": "traitacquirermoddedclasses",
     "name": "Trait Acquirer",
     "authors": [
-        "Arkhael"
+        "Arkhael",
+        "Tyeia"
     ],
     "description": "Allows you to acquire additional traits through gameplay.",
-    "version": "0.9.11",
+    "version": "0.9.12",
     "dependencies": {
         "game": ""
     }
