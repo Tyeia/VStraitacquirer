@@ -9,6 +9,6 @@ namespace traitacquirermoddedclasses
 {
     public class ExtendedTrait : Trait
     {
-        public string[] ExclusiveWith;
+        public string[]? ExclusiveWith;
     }
 }

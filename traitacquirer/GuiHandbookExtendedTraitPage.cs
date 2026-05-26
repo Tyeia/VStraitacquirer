@@ -18,7 +18,7 @@ namespace traitacquirermoddedclasses
 
         public PageText pageText;
         public string categoryCode = "trait";
-        public LoadedTexture Texture;
+        public LoadedTexture? Texture;
         RichTextComponentBase[] comps;
         
         public override float SearchWeightOffset {get;}
@@ -34,6 +34,8 @@ namespace traitacquirermoddedclasses
             pageText.Title = Lang.Get("traitname-" + trait.Code).ToSearchFriendly();
 
             pageCode = "ExtendedTraitInfo-" + trait.Code;
+
+            Texture = new TextTextureUtil(capi).GenTextTexture(pageText.Title, CairoFont.WhiteSmallText().WithLineHeightMultiplier(1.2));
 
             comps = VtmlUtil.Richtextify(capi, PageInfo(capi,trait), CairoFont.WhiteSmallText().WithLineHeightMultiplier(1.2));
         }
@@ -111,7 +113,7 @@ namespace traitacquirermoddedclasses
             Texture = new TextTextureUtil(capi).GenTextTexture(pageText.Title, CairoFont.WhiteSmallText());
         }
 
-        public override void Dispose() { Texture?.Dispose(); Texture = null; }
+        public override void Dispose() { Texture?.Dispose();}
 
         public float GetTextMatchWeight(string searchText)
         {
@@ -133,14 +135,17 @@ namespace traitacquirermoddedclasses
                 Recompose(capi);
             }
 
-            capi.Render.Render2DTexturePremultipliedAlpha(
+            if(Texture != null)
+            {
+                capi.Render.Render2DTexturePremultipliedAlpha(
                 Texture.TextureId,
                 (x + pad),
                 y + size / 4 - 3,
                 Texture.Width,
                 Texture.Height,
                 50
-            );
+                );
+            }
         }
 
         public override PageText GetPageText()

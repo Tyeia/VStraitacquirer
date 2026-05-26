@@ -17,20 +17,19 @@ namespace traitacquirermoddedclasses
     {
         // Called on server and client
         // Useful for registering block/entity classes on both sides
-        ICoreAPI api;
-        ICoreClientAPI capi;
-        ICoreServerAPI sapi;
+        ICoreAPI? api;
+        ICoreClientAPI? capi;
+        ICoreServerAPI? sapi;
         
         public List<ExtendedTrait> traits = new List<ExtendedTrait>();
         public List<CharacterClass> characterClasses = new List<CharacterClass>();
         public Dictionary<string, ExtendedTrait> TraitsByCode = new Dictionary<string, ExtendedTrait>();
         public Dictionary<string, CharacterClass> characterClassesByCode = new Dictionary<string, CharacterClass>();
-        GuiDialogCharacterBase charDlg;
+        GuiDialogCharacterBase? charDlg;
         
-        GuiElementRichtext richtextElem;
-        ElementBounds clippingBounds;
-        ElementBounds scrollbarBounds;
-        int spacing = 5;
+        GuiElementRichtext? richtextElem;
+        ElementBounds? clippingBounds;
+        ElementBounds? scrollbarBounds;
         public override void Start(ICoreAPI api)
         {
             this.api = api;
@@ -52,6 +51,7 @@ namespace traitacquirermoddedclasses
 
         public void acquireTraitCommand()
         {
+            if (sapi == null || api == null) return;
             var parsers = sapi.ChatCommands.Parsers;
             sapi.ChatCommands.GetOrCreate("acquireTrait")
             .WithAlias("at")
@@ -63,7 +63,11 @@ namespace traitacquirermoddedclasses
             {
                 var byEntity = args.Caller.Entity;
                 string exitMessage;
-                string traitName = args[0].ToString();
+                string? traitName = args[0]?.ToString();
+                if (string.IsNullOrWhiteSpace(traitName))
+                {
+                    return TextCommandResult.Error("No Trait specified");
+                }
                 bool success;
                 bool remove = false;
                 bool force = false;
@@ -73,16 +77,24 @@ namespace traitacquirermoddedclasses
                 {
                     return TextCommandResult.Error("Trait does not exist");
                 }
-                IPlayer byPlayer = null;
+                IPlayer? byPlayer = null;
                 if (byEntity is EntityPlayer) byPlayer = byEntity.World.PlayerByUid(((EntityPlayer)byEntity).PlayerUID);
+                if(byPlayer == null)
+                {
+                    return TextCommandResult.Error("No player found for caller");
+                }
+                if(traitName == null)
+                {
+                    return TextCommandResult.Error("No Trait specified");
+                }
                 if (remove)
                 {
-                    success = processTraits(byPlayer?.PlayerUID, new string[0], new string[] { traitName }, force);
+                    success = processTraits(byPlayer.PlayerUID, new string[0], new string[] { traitName }, force);
                     exitMessage = "Trait Removed";
                 }
                 else
                 {
-                    success = processTraits(byPlayer?.PlayerUID, new string[] { traitName }, new string[0], force);
+                    success = processTraits(byPlayer.PlayerUID, new string[] { traitName }, new string[0], force);
                     exitMessage = "Trait given";
                 }
                 if (!success)
@@ -95,6 +107,7 @@ namespace traitacquirermoddedclasses
 
         public void giveTraitCommand()
         {
+            if (sapi == null || api == null) return;
             var parsers = sapi.ChatCommands.Parsers;
             sapi.ChatCommands.GetOrCreate("giveTrait")
             .WithAlias("gt")
@@ -108,7 +121,11 @@ namespace traitacquirermoddedclasses
                 var byEntity = args.Caller.Entity;
                 string exitMessage;
                 bool success;
-                string traitName = args[0].ToString();
+                string? traitName = args[0]?.ToString();
+                if (string.IsNullOrWhiteSpace(traitName))
+                {
+                    return TextCommandResult.Error("No Trait specified");
+                }
                 bool remove = false;
                 bool force = false;
                 if (!args.Parsers[2].IsMissing) { remove = (bool)args[2]; }
@@ -117,14 +134,22 @@ namespace traitacquirermoddedclasses
                 {
                     return TextCommandResult.Error("Trait does not exist");
                 }
+                if(targetPlayer == null)
+                {
+                    return TextCommandResult.Error("No player found for caller");
+                }
+                if(traitName == null)
+                {
+                    return TextCommandResult.Error("No Trait specified");
+                }
                 if (remove)
                 {
-                    success = processTraits(targetPlayer?.PlayerUID, new string[0], new string[] { traitName }, force);
+                    success = processTraits(targetPlayer.PlayerUID, new string[0], new string[] { traitName }, force);
                     exitMessage = "Trait Removed";
                 }
                 else
                 {
-                    success = processTraits(targetPlayer?.PlayerUID, new string[] { traitName }, new string[0], force);
+                    success = processTraits(targetPlayer.PlayerUID, new string[] { traitName }, new string[0], force);
                     exitMessage = "Trait Given";
                 }
                 if (!success)
@@ -137,6 +162,7 @@ namespace traitacquirermoddedclasses
 
         public void listTraitsCommand()
         {
+            if (sapi == null || api == null) return;
             var parsers = sapi.ChatCommands.Parsers;
             sapi.ChatCommands.GetOrCreate("listTraits")
             .WithAlias("lt")
@@ -165,6 +191,11 @@ namespace traitacquirermoddedclasses
             this.capi = api;
             loadCharacterClasses();
             charDlg = api.Gui.LoadedGuis.Find(dlg => dlg is GuiDialogCharacterBase) as GuiDialogCharacterBase;
+            if(charDlg == null)
+            {
+                api.Logger.Error("Failed to find Character Dialog. Traits Tab will not be added.");
+                return;
+            }
             charDlg.RenderTabHandlers.Add(composeTraitsTab);
             
             api.Event.BlockTexturesLoaded += cleanupTraitsTab;
@@ -175,6 +206,10 @@ namespace traitacquirermoddedclasses
 
         public void traitacquirerModSystem_OnInitCustomPages(List<GuiHandbookPage> pages)
         {
+            if(capi == null)
+            {
+                return;
+            }
             foreach (ExtendedTrait trait in traits) //Generate a page for each trait
             {
                 pages.Add(new GuiHandbookExtendedTraitPage(capi, trait));
@@ -187,9 +222,14 @@ namespace traitacquirermoddedclasses
 
         private void cleanupTraitsTab()
         {
+            if (api == null) return;
+            if (charDlg == null) {
+                api.Logger.Error("Character Dialog not found. Cannot clean up Traits Tab.");
+                return; 
+            }
             foreach (Action<GuiComposer> i in charDlg.RenderTabHandlers)
             {
-                if (i.Target.ToString() == "Vintagestory.GameContent.CharacterSystem")
+                if (i.Target != null && i.Target.ToString() == "Vintagestory.GameContent.CharacterSystem")
                 {
                     charDlg.RenderTabHandlers.Remove(i);
                     break;
@@ -214,6 +254,7 @@ namespace traitacquirermoddedclasses
         }
         private void OnNewScrollbarValue(float value)
         {
+            if (richtextElem == null || clippingBounds == null || scrollbarBounds == null) return;
             richtextElem.Bounds.fixedY = 10 - value;
             richtextElem.Bounds.CalcWorldBounds();
 
@@ -221,8 +262,24 @@ namespace traitacquirermoddedclasses
 
         string getClassTraitText()
         {
+            if(capi == null || api == null)
+            {
+                return "Error loading API";
+            }
+            if(capi.World.Player == null)
+            {
+                return "Error loading player data";
+            }
             string charClass = capi.World.Player.Entity.WatchedAttributes.GetString("characterClass");
-            CharacterClass chclass = characterClasses.FirstOrDefault(c => c.Code == charClass);
+            if (charClass == null)
+            {
+                return "Error loading character class";
+            }
+            CharacterClass? chclass = characterClasses.FirstOrDefault(c => c.Code == charClass);
+            if(chclass == null)
+            {
+                return "Error loading character class data";
+            }
 
             StringBuilder fulldesc = new StringBuilder();
             StringBuilder attributes = new StringBuilder();
@@ -269,9 +326,18 @@ namespace traitacquirermoddedclasses
 
             string[] extraTraits = capi.World.Player.Entity.WatchedAttributes.GetStringArray("extraTraits");
             IOrderedEnumerable<string> extratraits = Enumerable.Empty<string>().OrderBy(x => 1); ;
+            
             if (extraTraits != null)
             {
-                extratraits = extraTraits?.OrderBy(code => (int)TraitsByCode[code].Type);
+                extratraits = extraTraits.OrderBy(code => (int)TraitsByCode[code].Type);
+                if(extratraits.Count() == 0)
+                {
+                    fulldesc.AppendLine(Lang.Get("no-extra-traits"));
+                }
+            }
+            else
+            {
+                fulldesc.AppendLine(Lang.Get("no-extra-traits"));
             }
 
             foreach (var code in extratraits)
@@ -308,7 +374,13 @@ namespace traitacquirermoddedclasses
 
         public void AcquireTraitEventHandler(string eventName, ref EnumHandling handling, IAttribute data)
         {
-            TreeAttribute tree = data as TreeAttribute;
+            if (api == null) return;
+            TreeAttribute? tree = data as TreeAttribute;
+            if (tree == null)
+            {
+                handling = EnumHandling.PreventSubsequent;
+                return;
+            }
             string playerUid = tree.GetString("playeruid");
             IPlayer player = api.World.PlayerByUid(playerUid);
             string[] addtraits = tree.GetStringArray("addtraits");
@@ -325,7 +397,12 @@ namespace traitacquirermoddedclasses
 
         public bool processTraits(string playerUid, string[] addtraits, string[] removetraits, bool force = false)
         {
-            IServerPlayer plr = api.World.PlayerByUid(playerUid) as IServerPlayer;
+            if (api == null) return false;
+            IServerPlayer? plr = api.World.PlayerByUid(playerUid) as IServerPlayer;
+            if(plr == null)
+            {
+                return false;
+            }
             List<string> newExtraTraits = new List<string>();
             string[] extraTraits = plr.Entity.WatchedAttributes.GetStringArray("extraTraits");
             List<string> incompatibleTraits = new List<string>();
@@ -339,7 +416,7 @@ namespace traitacquirermoddedclasses
             //Remove traits from the updated list
             foreach (string traitName in removetraits)
             {
-                ExtendedTrait trait = traits.Find(x => x.Code == traitName);
+                ExtendedTrait? trait = traits.Find(x => x.Code == traitName);
                 if (trait == null)
                 {
                     plr.SendIngameError("Trait is Null", Lang.Get("Trait is Null"));
@@ -354,7 +431,7 @@ namespace traitacquirermoddedclasses
             //Build the new list of traits you'll possess
             foreach (string traitName in addtraits)
             {
-                ExtendedTrait trait = traits.Find(x => x.Code == traitName);
+                ExtendedTrait? trait = traits.Find(x => x.Code == traitName);
                 if (trait == null)
                 {
                     plr.SendIngameError("Trait is Null", Lang.Get("Trait is Null"));
@@ -371,7 +448,12 @@ namespace traitacquirermoddedclasses
                 //Determine which traits are incompatible with the updated trait list
                 foreach (string traitName in newExtraTraits)
                 {
-                    ExtendedTrait trait = traits.Find(x => x.Code == traitName);
+                    ExtendedTrait? trait = traits.Find(x => x.Code == traitName);
+                    if(trait == null)
+                    {
+                        plr.SendIngameError("Trait is Null", Lang.Get("Trait is Null"));
+                        return false;
+                    }
                     if (trait.ExclusiveWith != null)
                     {
                         incompatibleTraits.AddRange(trait.ExclusiveWith);
@@ -399,8 +481,12 @@ namespace traitacquirermoddedclasses
 
         private void applyTraitAttributes(EntityPlayer eplr, string[] addtraits, string[] removetraits)
         {
+            if(characterClasses == null || TraitsByCode == null)
+            {
+                return;
+            }
             string classcode = eplr.WatchedAttributes.GetString("characterClass");
-            CharacterClass charclass = characterClasses.FirstOrDefault(c => c.Code == classcode);
+            CharacterClass? charclass = characterClasses.FirstOrDefault(c => c.Code == classcode);
             if (charclass == null) throw new ArgumentException("Not a valid character class code!");
 
             //Remove trait attributes
@@ -463,6 +549,7 @@ namespace traitacquirermoddedclasses
         }
         public void loadCharacterClasses()
         {
+            if (api == null) return;
             var allTraits = new List<ExtendedTrait>();
             var allCharacterClasses = new List<CharacterClass>();
 

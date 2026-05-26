@@ -38,14 +38,16 @@ namespace traitacquirermoddedclasses
 
             if (byEntity.World.Side == EnumAppSide.Server)
             {
-                IPlayer byPlayer = null;
+                IPlayer? byPlayer = null;
                 if (byEntity is EntityPlayer) byPlayer = byEntity.World.PlayerByUid(((EntityPlayer)byEntity).PlayerUID);
+                if (byPlayer == null) return;
 
                 if (!(byPlayer is IServerPlayer)) return;
 
                 
                 TreeAttribute tree = new TreeAttribute();
                 tree.SetString("playeruid", byPlayer?.PlayerUID);
+                if (itemslot.Itemstack == null) return;
                 tree.SetStringArray("addtraits", itemslot.Itemstack.ItemAttributes["traitdata"]["add"].AsArray<string>());
                 tree.SetStringArray("removetraits", itemslot.Itemstack.ItemAttributes["traitdata"]["remove"].AsArray<string>());
                 tree.SetInt("itemslotId", itemslot.Inventory.GetSlotId(itemslot));
@@ -57,6 +59,7 @@ namespace traitacquirermoddedclasses
         public override void GetHeldItemInfo(ItemSlot inSlot, StringBuilder dsc, IWorldAccessor world, bool withDebugInfo)
         {
             base.GetHeldItemInfo(inSlot, dsc, world, withDebugInfo);
+            if (inSlot.Itemstack == null) return;
             dsc.Append(Lang.Get("traitacquirer:manualtype-" + inSlot.Itemstack.Item.Variant["class"].ToString()));
         }
 

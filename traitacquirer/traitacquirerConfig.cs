@@ -42,7 +42,7 @@ namespace traitacquirermoddedclasses
 
         public static void loadConfig(ICoreAPI api)
         {
-            traitacquirerConfig traitacquirerConfig = null;
+            traitacquirerConfig traitacquirerConfig = new traitacquirerConfig();
             try
             {
                 traitacquirerConfig = new traitacquirerConfig(api.LoadModConfig<Dictionary<string, dynamic>>("traitacquirer.json"));
