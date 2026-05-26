@@ -19,5 +19,6 @@
   "traitname-weak": "Weak",
   "traitname-civil": "Civil",
   "traitname-kind": "Kind",
-  "handbook-category-trait": "Traits"
+  "handbook-category-trait": "Traits",
+  "no-extra-traits": "No extra traits"
 }
