@@ -7,7 +7,7 @@
         "Tyeia"
     ],
     "description": "Allows you to acquire additional traits through gameplay.",
-    "version": "0.9.12",
+    "version": "0.9.13",
     "dependencies": {
         "game": ""
     }
