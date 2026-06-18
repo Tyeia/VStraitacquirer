@@ -398,6 +398,14 @@ namespace traitacquirermoddedclasses
         public bool processTraits(string playerUid, string[] addtraits, string[] removetraits, bool force = false)
         {
             if (api == null) return false;
+            if (addtraits == null){
+                api.Logger.Error("AddTraits is Null", Lang.Get("AddTraits is Null"));
+                return false;
+            }
+            if (removetraits == null){
+                api.Logger.Error("RemoveTraits is Null", Lang.Get("RemoveTraits is Null"));
+                return false;
+            }
             IServerPlayer? plr = api.World.PlayerByUid(playerUid) as IServerPlayer;
             if(plr == null)
             {
