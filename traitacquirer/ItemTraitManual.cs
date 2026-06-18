@@ -48,7 +48,11 @@ namespace traitacquirermoddedclasses
                 TreeAttribute tree = new TreeAttribute();
                 tree.SetString("playeruid", byPlayer?.PlayerUID);
                 if (itemslot.Itemstack == null) return;
-                tree.SetStringArray("addtraits", itemslot.Itemstack.ItemAttributes["traitdata"]["add"].AsArray<string>());
+                var addTraits = itemslot.Itemstack.ItemAttributes["traitdata"]["add"].AsArray<string>();
+                var addMergetraits = itemslot.Itemstack.ItemAttributes["traitdata"]["addmerge"].AsArray<string>();
+                if(addTraits == null) addTraits = new string[0];
+                if(addMergetraits == null) addMergetraits = new string[0];
+                tree.SetStringArray("addtraits", addTraits.Concat(addMergetraits).ToArray());
                 tree.SetStringArray("removetraits", itemslot.Itemstack.ItemAttributes["traitdata"]["remove"].AsArray<string>());
                 tree.SetInt("itemslotId", itemslot.Inventory.GetSlotId(itemslot));
                 
