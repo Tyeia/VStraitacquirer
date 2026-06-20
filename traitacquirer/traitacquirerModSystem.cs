@@ -571,7 +571,7 @@ namespace traitacquirermoddedclasses
                 
                 
 
-                if (path.EndsWith("traits.json"))
+                if (path.EndsWith("config/traits.json"))
                 {
                     try
                     {   
@@ -600,7 +600,7 @@ namespace traitacquirermoddedclasses
                     }
                 }
 
-                if (path.EndsWith("characterclasses.json"))
+                if (path.EndsWith("config/characterclasses.json"))
                 {
                     try
                     {
