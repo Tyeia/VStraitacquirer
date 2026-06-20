@@ -600,6 +600,36 @@ namespace traitacquirermoddedclasses
                     }
                 }
 
+                if (path.EndsWith("traits-default.json"))
+                {
+                    try
+                    {
+                        //api.World.Logger.Warning($"Trait Acquirer Loading Path: {path};Asset: {asset}");
+                        var traitConfig = api.Assets.Get(assetLoc).ToObject<SonitoTraitConfigData>();
+                        var traits = traitConfig?.Traits ?? new List<ExtendedTrait>();
+                        api.World.Logger.Warning($"Loaded {traits.Count} Traits from {asset}");
+
+                        allTraits.AddRange(traits);
+                        // ======== Build runtime dictionaries ========
+                        foreach (var trait in traits)
+                        {
+                            try
+                            {
+                                //api.World.Logger.Warning($"Loading {trait.Code}");
+                                TraitsByCode[trait.Code] = trait;
+                            }
+                            catch (Exception e)
+                            {
+                                api.World.Logger.Warning($"Failed loading trait data from {trait}: {e}");
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        api.World.Logger.Warning($"Failed loading traits-default.json from {assetLoc}: {e}");
+                    }
+                }
+
                 if (path.EndsWith("config/characterclasses.json"))
                 {
                     try
@@ -643,5 +673,34 @@ namespace traitacquirermoddedclasses
             this.traits = allTraits;
             this.characterClasses = allCharacterClasses;
         }
+    }
+
+    /// <summary>
+    /// Classes for deserializing core-traits-default.json from Sonito's Dynamic Traits Reborn mod.
+    /// These wrapper classes allow proper parsing of the complete trait configuration structure.
+    /// </summary>
+    public class SonitoTraitConfigData
+    {
+        public bool Enable { get; set; }
+        public List<string> DisabledCodes { get; set; }
+        public bool BlockOppositeOnSameAttribute { get; set; }
+        public bool BlockSameGroupIncompat { get; set; }
+        public int StartingPoints { get; set; }
+        public int SameGroupPosPointsPenality { get; set; }
+        public int SameGroupNegPointsPenality { get; set; }
+        public List<ExtendedTrait> Traits { get; set; }
+        public List<SonitoTraitGroup> TraitGroups { get; set; }
+    }
+
+    /// <summary>
+    /// Sonito's Dynamic Traits Reborn - Trait grouping configuration.
+    /// Represents logical groupings of related traits.
+    /// </summary>
+    public class SonitoTraitGroup
+    {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public int MaxChoices { get; set; }
+        public List<string> Codes { get; set; }
     }
 }
