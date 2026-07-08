@@ -577,7 +577,7 @@ namespace traitacquirermoddedclasses
                     {   
                         //api.World.Logger.Warning($"Trait Acquirer Loading Path: {path};Asset: {asset}");
                         var traits = api.Assets.Get(assetLoc).ToObject<List<ExtendedTrait>>() ?? new List<ExtendedTrait>();
-                        api.World.Logger.Warning($"Loaded {traits.Count} Traits from {asset}");
+                        api.World.Logger.Notification($"Loaded {traits.Count} Traits from {asset}");
                         
                         allTraits.AddRange(traits);
                         // ======== Build runtime dictionaries ========
@@ -607,7 +607,7 @@ namespace traitacquirermoddedclasses
                         //api.World.Logger.Warning($"Trait Acquirer Loading Path: {path};Asset: {asset}");
                         var traitConfig = api.Assets.Get(assetLoc).ToObject<SonitoTraitConfigData>();
                         var traits = traitConfig?.Traits ?? new List<ExtendedTrait>();
-                        api.World.Logger.Warning($"Loaded {traits.Count} Traits from {asset}");
+                        api.World.Logger.Notification($"Loaded {traits.Count} Traits from {asset}");
 
                         allTraits.AddRange(traits);
                         // ======== Build runtime dictionaries ========
@@ -636,7 +636,7 @@ namespace traitacquirermoddedclasses
                     {
                         //api.World.Logger.Warning($"Trait Acquirer Loading Path: {path};Asset: {asset}");
                         var classes = api.Assets.Get(assetLoc).ToObject<List<CharacterClass>>() ?? new List<CharacterClass>();
-                        api.World.Logger.Warning($"Loaded {classes.Count} Classes from {asset}");
+                        api.World.Logger.Notification($"Loaded {classes.Count} Classes from {asset}");
                         allCharacterClasses.AddRange(classes);
 
                         
