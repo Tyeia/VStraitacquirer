@@ -9,6 +9,7 @@
   "traitacquirer-traittype-text": "Trait Type",
   "traitacquirer-acquiretraitcommand-desc": "Gives the caller the given Trait, removes with the rm flag, overrides exclusivity with the force flag",
   "traitacquirer-givetraitcommand-desc": "Gives the given Trait to the chosen player, removes with the rm flag, overrides exclusivity with the force flag",
+  "traitacquirer-cleanuptraitscommand-desc": "Cleans up the extra traits of the chosen player",
   "traitname-farsighted": "Farsighted",
   "traitname-claustrophobic": "Claustrophobic",
   "traitname-frail": "Frail",

@@ -24,6 +24,7 @@ namespace traitacquirermoddedclasses
             {"giveCmdPrivilege", "root"},
             {"listCmdPrivilege", "chat"},
             {"classManuals", true},
+            {"removeNonexistentTraits", true},
             {"manualsAvgPrice", 10f},
             {"manualsVarPrice", 4f},
             {"manualsAvgStock", 1f},

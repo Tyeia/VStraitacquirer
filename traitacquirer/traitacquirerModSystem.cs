@@ -10,6 +10,7 @@ using System;
 using System.Data;
 using System.Text;
 using System.Numerics;
+using Vintagestory.API.Util;
 
 namespace traitacquirermoddedclasses
 {
@@ -46,6 +47,11 @@ namespace traitacquirermoddedclasses
             api.Event.RegisterEventBusListener(AcquireTraitEventHandler, 0.5, "traitItem");
             acquireTraitCommand();
             giveTraitCommand();
+            CleanupPlayerExtraTraitsCommand();
+            if(api.World.Config.GetAsBool("removeNonexistentTraits"))
+            {
+                sapi.Event.PlayerJoin += OnPlayerJoin;
+            }
             //listTraitsCommand();
         }
 
@@ -568,6 +574,77 @@ namespace traitacquirermoddedclasses
             
             eplr.GetBehavior<EntityBehaviorHealth>()?.MarkDirty();
             */
+        }
+
+
+        /// Remove any extra trait codes from a single player's watched attributes that are not present in `TraitsByCode`.
+        public void CleanupPlayerExtraTraits(IServerPlayer player, bool persist = true)
+        {
+            if (player == null || player.Entity == null) return;
+
+            string[] extraTraits = player.Entity.WatchedAttributes.GetStringArray("extraTraits");
+            if (extraTraits == null || extraTraits.Length == 0) return;
+
+            var list = extraTraits.ToList();
+            int before = list.Count;
+            list.RemoveAll(code => string.IsNullOrEmpty(code) || !TraitsByCode.ContainsKey(code));
+
+            if (list.Count != before)
+            {
+                if (persist)
+                {
+                    //Update the trait list and apply their effects
+                    player.Entity.WatchedAttributes.SetStringArray("extraTraits", list.ToArray());
+                    player.Entity.WatchedAttributes.MarkPathDirty("extraTraits");
+                    //applyTraitAttributes(player.Entity, new string[0], extraTraits.Except(list).ToArray());
+                }
+
+                api?.World?.Logger.Warning($"Cleaned {before - list.Count} undefined extra trait(s) for {player.PlayerName}.");
+            }
+            else
+            {
+                api?.World?.Logger.Warning($"No undefined extra traits found for {player.PlayerName}.");
+            }
+        }
+
+        public void CleanupPlayerExtraTraitsCommand()
+        {
+            if (sapi == null || api == null) return;
+            var parsers = sapi.ChatCommands.Parsers;
+            sapi.ChatCommands.GetOrCreate("cleanupTraits")
+            .WithAlias("ct")
+            .WithDescription(Lang.Get("traitacquirer-cleanuptraitscommand-desc"))//"Cleans up undefined extra traits for the specified player")
+            .RequiresPrivilege(this.api.World.Config.GetString("acquireCmdPrivilege"))
+            .RequiresPlayer()
+            .WithArgs(parsers.Word("player name"))
+            .HandleWith((args) =>
+            {
+                var playerName = args[0].ToString();
+                if (playerName == null)
+                {
+                    return TextCommandResult.Error("No player name specified.");
+                }
+                var targetPlayer = sapi.Server.Players.FirstOrDefault(p => p.PlayerName.Equals(playerName, StringComparison.OrdinalIgnoreCase));
+                if (targetPlayer != null)
+                {
+                    CleanupPlayerExtraTraits(targetPlayer, true);
+                }
+                else
+                {
+                    return TextCommandResult.Error($"Player '{playerName}' not found.");
+                }
+                return TextCommandResult.Success($"Cleaned up undefined extra traits for player {playerName}.");
+            });
+        }
+
+        // Called when a player joins the server. Cleans up any undefined extra traits for that player.
+        public void OnPlayerJoin(IServerPlayer player)
+        {
+            if (player == null || api == null) return;
+            if(api.World.Config.GetBool("removeNonexistentTraits"))
+            {
+                CleanupPlayerExtraTraits(player, true);
+            }
         }
         public void loadCharacterClasses()
         {
