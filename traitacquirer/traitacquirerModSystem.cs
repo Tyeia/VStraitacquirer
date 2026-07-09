@@ -332,19 +332,22 @@ namespace traitacquirermoddedclasses
 
             string[] extraTraits = capi.World.Player.Entity.WatchedAttributes.GetStringArray("extraTraits");
             // Filter out any extra traits that are not defined in the loaded traits
-            List<string> extraTraitsRemove = new List<string>();
-            foreach (string extratrait in extraTraits)
+            if (extraTraits != null)
             {
-                if (!TraitsByCode.ContainsKey(extratrait))
+                List<string> extraTraitsRemove = new List<string>();
+                foreach (string extratrait in extraTraits)
                 {
-                    capi.World.Logger.Warning($"Player has an extra trait '{extratrait}' that is not defined in the loaded traits.");
-                    extraTraitsRemove.Add(extratrait);
+                    if (!TraitsByCode.ContainsKey(extratrait))
+                    {
+                        capi.World.Logger.Warning($"Player has an extra trait '{extratrait}' that is not defined in the loaded traits.");
+                        extraTraitsRemove.Add(extratrait);
+                    }
+
                 }
-                
-            }
-            foreach (string extratrait in extraTraitsRemove)
-            {
-                extraTraits = extraTraits.Remove(extratrait);
+                foreach (string extratrait in extraTraitsRemove)
+                {
+                    extraTraits = extraTraits.Remove(extratrait);
+                }
             }
             IOrderedEnumerable<string> extratraits = Enumerable.Empty<string>().OrderBy(x => 1); ;
             if (extraTraits != null)
