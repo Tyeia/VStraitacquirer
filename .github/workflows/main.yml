@@ -1,0 +1,84 @@
+# .github/workflows/build.yml
+#
+# Builds a Vintage Story mod by downloading the game's dedicated SERVER
+# package (freely downloadable, no Steam/account login required, unlike the
+# client) purely to harvest the reference DLLs (VintagestoryAPI.dll,
+# VintagestoryLib.dll, VSEssentials.dll, VSSurvivalMod.dll,
+# VSCreativeMod.dll, Newtonsoft.Json.dll, etc.), then runs your build script
+# against them.
+#
+# ASSUMPTIONS — adjust these to match your repo:
+#   - Your .csproj references the game DLLs via a $(VINTAGE_STORY)
+#     env-var-based HintPath, e.g.:
+#       <HintPath>$(VINTAGE_STORY)/VintagestoryAPI.dll</HintPath>
+#     This is the standard pattern in the official mod template
+#     (https://github.com/anegostudios/vsmodexample) and is what
+#     `VINTAGE_STORY` is set to below.
+#   - You have a build script at the repo root (build.sh). Swap the
+#     final step for `dotnet build` / `dotnet publish` / a .cake script /
+#     whatever you actually use.
+#   - Pinning a specific game version (recommended, so a new VS release
+#     can't silently break your CI). Update VS_VERSION when you bump your
+#     target version. Check available versions at:
+#     https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_VERSION.tar.gz
+
+name: Build Mod
+
+on:
+  push:
+    tags:
+      - "*"
+  pull_request:
+  workflow_dispatch:
+
+env:
+  VS_VERSION: "1.22.6"   # pin to whatever version you're targeting
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout mod source
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"   # match your csproj TargetFramework
+
+      - name: Cache Vintage Story game files
+        id: cache-vs
+        uses: actions/cache@v4
+        with:
+          path: vs
+          key: vintagestory-server-${{ env.VS_VERSION }}
+
+      - name: Download Vintage Story server (for reference DLLs)
+        if: steps.cache-vs.outputs.cache-hit != 'true'
+        run: |
+          curl -sSL -o vs.tar.gz \
+            "https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_${VS_VERSION}.tar.gz"
+          mkdir -p vs
+          tar -xzf vs.tar.gz -C vs
+
+      - name: Restore dependencies
+        run: dotnet restore
+        env:
+          VINTAGE_STORY: ${{ github.workspace }}/vs
+
+      - name: Run build script
+        run: |
+          chmod +x ./build.sh
+          ./build.sh
+        env:
+          VINTAGE_STORY: ${{ github.workspace }}/vs
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mod-build
+          path: |
+            **/Releases/*.zip
+            bin/**/*.dll
+          if-no-files-found: warn
